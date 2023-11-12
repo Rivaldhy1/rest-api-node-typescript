@@ -1,12 +1,24 @@
-import express, { type Application, type NextFunction, type Request, type Response } from 'express'
+import express, { Application } from 'express'
+import { routes } from './routes'
+import { logger } from './utils/logger'
+import bodyParser from 'body-parser'
+import cors from 'cors'
 
 const app: Application = express()
 const port: number = 4040
 
-app.use('/test', (req: Request, res: Response, next: NextFunction) => {
-  res.status(200).send({ status: '200', data: 'Hello' })
-})
+// parse body request
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
-app.listen(port, () => {
-  console.log(`Server is running  ${port}`)
+// cors access handler
+app.use(cors())
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', '*')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  next()
 })
+routes(app)
+
+app.listen(port, () => logger.info(`Server is listening ${port}`))
