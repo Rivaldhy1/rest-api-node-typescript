@@ -1,7 +1,13 @@
 import { Request, Response } from 'express'
 import { createProductValidation, updateProductValidation } from '../validations/product.validation'
 import { logger } from '../utils/logger'
-import { addProductToDb, getProductById, getProductFromDb, updateProductById } from '../services/product.service'
+import {
+  addProductToDb,
+  deleteProductById,
+  getProductById,
+  getProductFromDb,
+  updateProductById
+} from '../services/product.service'
 import { v4 as uuidv4 } from 'uuid'
 
 export const createProduct = async (req: Request, res: Response) => {
@@ -66,8 +72,38 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 
   try {
-    await updateProductById(id, value)
-    logger.info('Success update Product')
-    return res.status(200).send({ status: true, statusCode: 200, message: 'update product success' })
-  } catch (error) {}
+    const result = await updateProductById(id, value)
+
+    if (result) {
+      logger.info('Success update Product')
+      return res.status(200).send({ status: true, statusCode: 200, message: 'update product success' })
+    } else {
+      logger.info('Data Not Found!')
+      return res.status(404).send({ status: true, statusCode: 404, message: 'Data Not Found!' })
+    }
+  } catch (error) {
+    logger.error('ERR: product - update = ', error)
+    return res.status(422).send({ status: false, statusCode: 422, message: error })
+  }
+}
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  const {
+    params: { id }
+  } = req
+
+  try {
+    const result = await deleteProductById(id)
+
+    if (result) {
+      logger.info('Success delete Product')
+      return res.status(200).send({ status: true, statusCode: 200, message: 'delete product success' })
+    } else {
+      logger.info('Data Not Found!')
+      return res.status(404).send({ status: true, statusCode: 404, message: 'Data Not Found!' })
+    }
+  } catch (error) {
+    logger.error('ERR: product - delete = ', error)
+    return res.status(422).send({ status: false, statusCode: 422, message: error })
+  }
 }
